@@ -18,30 +18,22 @@ function resolvePromise (promise2,x,resolve,reject){
         return reject(new TypeError('Chaining cycle detected for promise #<Promise> --'))
     }
     // 2) 判断x 的类型 x 如果是对象或者函数 说明他有可能是一个promise
-    let called; 
     if((typeof x ==='object' && x!=null) || typeof x === 'function'){
         // 有可能是promise promise要有then方法
         try{
             let then = x.then;  // {a:1} 因为then方法 可能使用的getter来定义的
             if(typeof then === 'function'){ // 只能认为他是promise了
                 // call 改变this指向 并且让函数执行
-                then.call(x,y=>{ // 只取一次 当前promise解析出来的结果可能还是一个promise继续解析直到他是一个普通值为止
-                    // 递归解析resolve的值
-                    if(called) return;
-                    called = true;
-                    resolvePromise(promise2,y,resolve,reject)
-                },r=>{
-                    if(called) return;
-                    called = true;
+                then.call(x,(y)=>{ // 只取一次
+                    resolve(y);
+                },(r)=>{
                     reject(r);
                 })
             }else{
                 // {a:1,then:1}
                 resolve(x)
             }
-        }catch(e){ //  我取then出错了 在错误中又掉了该promise的成功
-            if(called) return
-            called = true;
+        }catch(e){
             reject(e); //取值失败 就走到error中
         }
     }else{
@@ -80,8 +72,6 @@ class Promise {
         }
     }
     then(onfulfilled, onrejected) {
-        onfulfilled = typeof onfulfilled == 'function'?onfulfilled:v=>v;
-        onrejected = typeof onrejected == 'function'?onrejected:err=>{throw err}
         // 为了实现链式调用 就创建一个新的promise
         let promise2 = new Promise((resolve, reject) => {
             if (this.status === RESOLVED) {
@@ -133,15 +123,6 @@ class Promise {
 
         return promise2; // 返回这个promise
     }
-}
-Promise.defer = Promise.deferred = function () { // 稍后继续说 catch
-    let dfd = {}
-    dfd.promise = new Promise((resolve,reject)=>{
-        dfd.resolve = resolve;
-        dfd.reject = reject;
-    })
-    return dfd;
+
 }
 module.exports = Promise;
-
-// npm install -g promises-aplus-tests
