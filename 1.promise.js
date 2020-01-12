@@ -1,21 +1,27 @@
-// promise  https://promisesaplus.com/
-// 目前低版本浏览器 ie 不支持 需要polyfill es6-promise(这个包实现了promise)
-
-// 高版本都支持了promise 
-
-
-// promise 是为了解决异步问题的 恶魔金子塔 并发异步处理
-
-// 有可能别人写的promise是一个函数
-let Promise = require('./promise');
-let promise = new Promise((resolve,reject)=>{
-    resolve('xxx')
-    //throw new Error('错误')
-    //reject('val');
+let Promise = require('./promise')
+const promise = new Promise((resolve,reject)=>{ // executor 立即执行
+   resolve('hello');
 });
-promise.then((data)=>{ // onfulfilled 成功
-    console.log('res',data);
-},(err)=>{ // onrejected 失败
-    console.log(err);
-});
+
+// 因为你调用了 resolve('hello')
+// let promise2 = promise.then((data)=>{
+//     return 100; // promise.resolve(100)
+// })
+// promise2.then((data)=>{
+//     console.log('success:'+data);
+// })
+// 1.每次调用then方法时 都返回一个新的promise实例
+
+
+// 1) step 1 引用同一个对象
+let promise2 = promise.then(()=>{
+   throw new Error('errer')
+})
+promise2.then((data)=>{
+    console.log('ssss:'+data);
+},(err)=>{
+    console.log(err)
+})
+
+
 
