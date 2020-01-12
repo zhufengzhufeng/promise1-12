@@ -1,8 +1,15 @@
+// 1.Promise是一个类 天生的,类中需要传入一个executor 执行器,默认会立即执行
 
+// 2.promise 内部会提供两个方法,可以更改promise的状态 3个状态： 等待态 成功态 失败态
+// resolve 触发成功 (成功的内容) reject 触发失败 (失败的原因)  undefined
+// 如果一旦promise成功了就不能失败,失败的情况 reject 、抛出异常
+// 每个promise实例都要有一个then方法，分别是成功的回调和失败的回调
 const PENDING = 'PENDING';
 const RESOLVED = 'RESOLVED'; // 成功
 const REJECTED = 'REJECTED'; // 失败
 
+// resolvePromise(promise2,x,resolve,reject);
+// 判断x的状态 是让promise2变成成功态还是失败态
 function resolvePromise (promise2,x,resolve,reject){
     // 此方法 为了兼容所有的promise,n个库中间 执行的流程是一样的
     // 尽可能详细 不出错
@@ -10,8 +17,10 @@ function resolvePromise (promise2,x,resolve,reject){
     if(promise2 === x){
         return reject(new TypeError('Chaining cycle detected for promise #<Promise> --'))
     }
+    // 2) 判断x 的类型 x 如果是对象或者函数 说明他有可能是一个promise
     let called; 
     if((typeof x ==='object' && x!=null) || typeof x === 'function'){
+        // 有可能是promise promise要有then方法
         try{
             let then = x.then;  // {a:1} 因为then方法 可能使用的getter来定义的
             if(typeof then === 'function'){ // 只能认为他是promise了
@@ -50,11 +59,6 @@ class Promise {
         this.onRejectedCallbacks = [];
         // 保证只有状态是等待态的时候 才能更改状态
         let resolve = (value) => {
-            // 增加
-            if(value instanceof Promise){
-                value.then(resolve,reject);// 递归解析直到是普通值位置
-                return;
-            }
             if (this.status === PENDING) {
                 this.value = value;
                 this.status = RESOLVED;
@@ -75,15 +79,13 @@ class Promise {
             reject(e); // 如果内部出错直接将err手动的调用reject方法向下传递
         }
     }
-    catch(errCallback){ // catch就是没有成功的then方法
-        return this.then(null,errCallback)
-    }
     then(onfulfilled, onrejected) {
         onfulfilled = typeof onfulfilled == 'function'?onfulfilled:v=>v;
         onrejected = typeof onrejected == 'function'?onrejected:err=>{throw err}
         // 为了实现链式调用 就创建一个新的promise
         let promise2 = new Promise((resolve, reject) => {
             if (this.status === RESOLVED) {
+                // 执行then中的方法 可能返回的是一个普通值或者是promise 我要判断x的类型是不是一个promise，如果是promise的话 需要让这个promise执行，并且采用他的状态 作为promise的成功或者失败
                 setTimeout(() => {
                     try {
                         let x = onfulfilled(this.value);
