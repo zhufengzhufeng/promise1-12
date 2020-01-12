@@ -33,4 +33,8 @@ fs.readFile('./age.txt','utf8',function (error,data) { // 5s
 fs.readFile('./name.txt','utf8',function (error,data) { // 3s
     // renderObj['name'] = data;
     out('name',data);
-})
+});
+
+
+// 发布订阅 所有库中都存在发布订阅
+// 观察者模式
