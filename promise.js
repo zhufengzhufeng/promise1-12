@@ -7,6 +7,7 @@
 const PENDING = 'PENDING';
 const RESOLVED = 'RESOLVED'; // 成功
 const REJECTED  = 'REJECTED'; // 失败
+
 class Promise{
     constructor(executor){ // 宏变量
         this.status = PENDING; // 默认是等待态
